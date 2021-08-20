@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraftforge.fml.client.config.GuiCheckBox;
 import org.lwjgl.input.Keyboard;
+import org.apache.commons.lang3.StringUtils;
 
 import java.awt.*;
 import java.io.IOException;
@@ -53,7 +54,18 @@ final class GuiProxy extends GuiScreen {
     }
 
     private static boolean isValidIpPort(String ipP) {
-        return ipP.matches("(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+");
+        String[] split = ipP.split(":");
+        if (split.length > 1) {
+            if (!StringUtils.isNumeric(split[1])) {
+                return false;
+            }
+            int port = Integer.parseInt(split[1]);
+            if (port < 0 || port > 0xFFFF) {
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     private void centerButtons(int amount, int buttonLength, int gap) {
@@ -172,7 +184,7 @@ final class GuiProxy extends GuiScreen {
 
         this.ipPort = new GuiTextField(3, this.fontRenderer, positionX, positionY[2], buttonLength, 20);
         this.ipPort.setText(ProxyServer.proxy.enabled ? ProxyServer.proxy.ip + ":" + ProxyServer.proxy.port : "");
-        this.ipPort.setMaxStringLength(21);
+        this.ipPort.setMaxStringLength(1024);
         this.ipPort.setFocused(true);
 
         this.username = new GuiTextField(4, this.fontRenderer, positionX, positionY[4], buttonLength, 20);
